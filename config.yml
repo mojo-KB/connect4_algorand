@@ -1,0 +1,18 @@
+accounts:
+  account_1:
+    address: BBHSLYSMCQ3MN7CMRHTO66MGVSET2AFQTDEJNFSPFIOEEYUXJLHIB6LFO4
+    mnemonic: neutral index ripple helmet gap benefit whisper impact awkward gap inherit lawsuit make copy dial marble minimum debris rescue relief student roof bird absent skirt
+    private_key: p7ScdK+mr1RQ33GG0Jfn4kdDwKCnh2gcTm5Vu+vu0qIITyXiTBQ2xvxMiebveYasiT0AsJjIlpZPKhxCYpdKzg==
+  account_2:
+    address: PCIDET6SVHPS4QXK7EMC5ORYHMI4JF5BCCRGUMSSPJOZ7HGVY3UYDD33WY
+    mnemonic: humor auction disease rule immense minor tank replace gasp paddle taxi any grass cigar brave adult stool jungle south swarm assault nose diary ability since
+    private_key: eLsDftLLuDS227YBs+e8o/Cyo2jDA7NGXqC3zYZZqid4kDJP0qnfLkLq+Rguujg7EcSXoRCiajJSel2fnNXG6Q==
+  account_3:
+    address: IBEUTMQ6RCMHKFWJQZV36Y5MBKEX6F7JDUWX7YF33SJUWPAP5PIOSMSNXA
+    mnemonic: stage merit gorilla unique ski creek endless company extend side inhale age remove empty pave sniff loop sense depend apology off patient together ability hockey
+    private_key: oeZiydgu5cw0iS6H+nHnTPDaJDF0zR/08HWmoEyEdjxASUmyHoiYdRbJhmu/Y6wKiX8X6R0tf+C73JNLPA/r0A==
+  total: 3
+
+client_credentials:
+  address: "https://testnet-algorand.api.purestake.io/ps2"
+  token: "GvC4s9wSqvpPfYrYZpPH8JHllwWoFD26dzFVLGZ4"
