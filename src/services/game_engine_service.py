@@ -1,3 +1,5 @@
+from typing import Union
+
 from algosdk import logic as algo_logic
 from algosdk.future import transaction as algo_txn
 from pyteal import compileTeal, Mode
@@ -76,7 +78,8 @@ class GameEngineService:
         transaction_response = client.pending_transaction_info(tx_id)
 
         self.app_id = transaction_response['application-index']
-        print(f"Tic-Tac-Toe application deployed with the application_id: {self.app_id}")
+        print(
+            f"Tic-Tac-Toe application deployed with the application_id: {self.app_id}")
 
         return f"Tic-Tac-Toe application deployed with the application_id: {self.app_id}"
 
@@ -102,7 +105,8 @@ class GameEngineService:
         self.escrow_fund_program_bytes = NetworkInteraction.compile_program(client=client,
                                                                             source_code=escrow_fund_program_compiled)
 
-        self.escrow_fund_address = algo_logic.address(self.escrow_fund_program_bytes)
+        self.escrow_fund_address = algo_logic.address(
+            self.escrow_fund_program_bytes)
 
         player_x_funding_txn = PaymentTransactionRepository.payment(client=client,
                                                                     sender_address=self.player_x_address,
@@ -138,9 +142,12 @@ class GameEngineService:
         player_x_funding_txn.group = gid
         player_o_funding_txn.group = gid
 
-        app_initialization_txn_signed = app_initialization_txn.sign(self.app_creator_pk)
-        player_x_funding_txn_signed = player_x_funding_txn.sign(self.player_x_pk)
-        player_o_funding_txn_signed = player_o_funding_txn.sign(self.player_o_pk)
+        app_initialization_txn_signed = app_initialization_txn.sign(
+            self.app_creator_pk)
+        player_x_funding_txn_signed = player_x_funding_txn.sign(
+            self.player_x_pk)
+        player_o_funding_txn_signed = player_o_funding_txn.sign(
+            self.player_o_pk)
 
         signed_group = [app_initialization_txn_signed,
                         player_x_funding_txn_signed,
@@ -152,16 +159,26 @@ class GameEngineService:
 
         return f"Game started with the transaction_id: {txid}"
 
-    def play_action(self, client, player_id: str, action_position: int):
+    def play_action(self, client, player_id: str, action_position: Union[int, str]):
         """
         Application call transaction that performs an action for the specified player at the specified action position.
         :param client:
         :param player_id: "X" or "O"
-        :param action_position: action position in the range of [0, 8]
+        :param action_position: action position in the range of [0, 42]
         :return:
         """
         if player_id != "X" and player_id != "O":
-            raise ValueError('Invalid player id! The player_id should be X or O.')
+            raise ValueError(
+                'Invalid player id! The player_id should be X or O.')
+
+        if not isinstance(action_position, (int, str)) or (isinstance(action_position, str) and not action_position.isnumeric()):
+            raise ValueError(
+                'Invalid action position! The action position should be an integer or a string that represents an integer within the range of [0, 42].')
+
+        action_position = int(action_position)
+        if action_position < 0 or action_position > 42:
+            raise ValueError(
+                'Invalid action position! The action position should be within the range of [0, 42].')
 
         if self.app_id is None:
             raise ValueError('The application has not been deployed')
@@ -183,7 +200,8 @@ class GameEngineService:
                                                       transaction=app_initialization_txn,
                                                       log=False)
 
-        print(f"{player_id} has been put at position {action_position} in transaction with id: {tx_id}")
+        print(
+            f"{player_id} has been put at position {action_position} in transaction with id: {tx_id}")
 
         return f"{player_id} has been put at position {action_position} in transaction with id: {tx_id}"
 
@@ -204,7 +222,8 @@ class GameEngineService:
                                                       transaction=fund_escrow_txn,
                                                       log=False)
 
-        print(f'Escrow address has been funded in transaction with id: {tx_id}')
+        print(
+            f'Escrow address has been funded in transaction with id: {tx_id}')
         return f'Escrow address has been funded in transaction with id: {tx_id}'
 
     def win_money_refund(self, client, player_id: str):
@@ -217,7 +236,8 @@ class GameEngineService:
         :return:
         """
         if player_id != "X" and player_id != "O":
-            raise ValueError('Invalid player id! The player_id should be X or O.')
+            raise ValueError(
+                'Invalid player id! The player_id should be X or O.')
 
         if self.app_id is None:
             raise ValueError('The application has not been deployed')
@@ -252,15 +272,18 @@ class GameEngineService:
 
         app_withdraw_call_txn_signed = app_withdraw_call_txn.sign(player_pk)
 
-        refund_txn_logic_signature = algo_txn.LogicSig(self.escrow_fund_program_bytes)
-        refund_txn_signed = algo_txn.LogicSigTransaction(refund_txn, refund_txn_logic_signature)
+        refund_txn_logic_signature = algo_txn.LogicSig(
+            self.escrow_fund_program_bytes)
+        refund_txn_signed = algo_txn.LogicSigTransaction(
+            refund_txn, refund_txn_logic_signature)
 
         signed_group = [app_withdraw_call_txn_signed,
                         refund_txn_signed]
 
         txid = client.send_transactions(signed_group)
 
-        print(f"The winning money have been refunded to the player {player_id} in the transaction with id: {txid}")
+        print(
+            f"The winning money have been refunded to the player {player_id} in the transaction with id: {txid}")
         return f"The winning money have been refunded to the player {player_id} in the transaction with id: {txid}"
 
     def tie_money_refund(self, client):
@@ -309,15 +332,20 @@ class GameEngineService:
         refund_player_x_txn.group = gid
         refund_player_o_txn.group = gid
 
-        app_withdraw_call_txn_signed = app_withdraw_call_txn.sign(self.app_creator_pk)
+        app_withdraw_call_txn_signed = app_withdraw_call_txn.sign(
+            self.app_creator_pk)
 
-        refund_player_x_txn_logic_signature = algo_txn.LogicSig(self.escrow_fund_program_bytes)
+        refund_player_x_txn_logic_signature = algo_txn.LogicSig(
+            self.escrow_fund_program_bytes)
         refund_player_x_txn_signed = \
-            algo_txn.LogicSigTransaction(refund_player_x_txn, refund_player_x_txn_logic_signature)
+            algo_txn.LogicSigTransaction(
+                refund_player_x_txn, refund_player_x_txn_logic_signature)
 
-        refund_player_o_txn_logic_signature = algo_txn.LogicSig(self.escrow_fund_program_bytes)
+        refund_player_o_txn_logic_signature = algo_txn.LogicSig(
+            self.escrow_fund_program_bytes)
         refund_player_o_txn_signed = \
-            algo_txn.LogicSigTransaction(refund_player_o_txn, refund_player_o_txn_logic_signature)
+            algo_txn.LogicSigTransaction(
+                refund_player_o_txn, refund_player_o_txn_logic_signature)
 
         signed_group = [app_withdraw_call_txn_signed,
                         refund_player_x_txn_signed,
@@ -325,6 +353,7 @@ class GameEngineService:
 
         txid = client.send_transactions(signed_group)
 
-        print(f"The initial bet money have been refunded to the players in the transaction with id: {txid}")
+        print(
+            f"The initial bet money have been refunded to the players in the transaction with id: {txid}")
 
         return f"The initial bet money have been refunded to the players in the transaction with id: {txid}"
