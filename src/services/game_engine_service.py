@@ -1,5 +1,3 @@
-from typing import Union
-
 from algosdk import logic as algo_logic
 from algosdk.future import transaction as algo_txn
 from pyteal import compileTeal, Mode
@@ -159,26 +157,17 @@ class GameEngineService:
 
         return f"Game started with the transaction_id: {txid}"
 
-    def play_action(self, client, player_id: str, action_position: Union[int, str]):
+    def play_action(self, client, player_id: str, action_position: int):
         """
         Application call transaction that performs an action for the specified player at the specified action position.
         :param client:
         :param player_id: "X" or "O"
-        :param action_position: action position in the range of [0, 42]
+        :param action_position: action position in the range of [0, 8]
         :return:
         """
         if player_id != "X" and player_id != "O":
             raise ValueError(
                 'Invalid player id! The player_id should be X or O.')
-
-        if not isinstance(action_position, (int, str)) or (isinstance(action_position, str) and not action_position.isnumeric()):
-            raise ValueError(
-                'Invalid action position! The action position should be an integer or a string that represents an integer within the range of [0, 42].')
-
-        action_position = int(action_position)
-        if action_position < 0 or action_position > 42:
-            raise ValueError(
-                'Invalid action position! The action position should be within the range of [0, 42].')
 
         if self.app_id is None:
             raise ValueError('The application has not been deployed')
