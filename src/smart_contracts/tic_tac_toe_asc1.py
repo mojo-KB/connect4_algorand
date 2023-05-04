@@ -58,7 +58,8 @@ def application_start():
     is_app_initialization = Txn.application_id() == Int(0)
 
     actions = Cond(
-        [Txn.application_args[0] == AppActions.SetupPlayers, initialize_players_logic()],
+        [Txn.application_args[0] == AppActions.SetupPlayers,
+            initialize_players_logic()],
         [And(Txn.application_args[0] == AppActions.ActionMove,
              Global.group_size() == Int(1)), play_action_logic()],
         [Txn.application_args[0] == AppActions.MoneyRefund, money_refund_logic()]
@@ -108,14 +109,16 @@ def initialize_players_logic():
         App.globalPut(AppVariables.PlayerOAddress, Gtxn[2].sender()),
         App.globalPut(AppVariables.PlayerTurnAddress, Gtxn[1].sender()),
         App.globalPut(AppVariables.FundsEscrowAddress, Gtxn[1].receiver()),
-        App.globalPut(AppVariables.ActionTimeout, Global.latest_timestamp() + DefaultValues.GameDurationInSeconds),
+        App.globalPut(AppVariables.ActionTimeout, Global.latest_timestamp(
+        ) + DefaultValues.GameDurationInSeconds),
         Return(Int(1))
     ])
 
     return Seq([
         player_x_address,
         player_o_address,
-        If(Or(player_x_address.hasValue(), player_o_address.hasValue()), setup_failed, setup_players)
+        If(Or(player_x_address.hasValue(), player_o_address.hasValue()),
+           setup_failed, setup_players)
     ])
 
 
@@ -127,12 +130,18 @@ def has_player_won(state):
     :return:
     """
     return If(Or(BitwiseAnd(state, Int(WINING_STATES[0])) == Int(WINING_STATES[0]),
-                 BitwiseAnd(state, Int(WINING_STATES[1])) == Int(WINING_STATES[1]),
-                 BitwiseAnd(state, Int(WINING_STATES[2])) == Int(WINING_STATES[2]),
-                 BitwiseAnd(state, Int(WINING_STATES[3])) == Int(WINING_STATES[3]),
-                 BitwiseAnd(state, Int(WINING_STATES[4])) == Int(WINING_STATES[4]),
-                 BitwiseAnd(state, Int(WINING_STATES[5])) == Int(WINING_STATES[5]),
-                 BitwiseAnd(state, Int(WINING_STATES[6])) == Int(WINING_STATES[6]),
+                 BitwiseAnd(state, Int(WINING_STATES[1])) == Int(
+                     WINING_STATES[1]),
+                 BitwiseAnd(state, Int(WINING_STATES[2])) == Int(
+                     WINING_STATES[2]),
+                 BitwiseAnd(state, Int(WINING_STATES[3])) == Int(
+                     WINING_STATES[3]),
+                 BitwiseAnd(state, Int(WINING_STATES[4])) == Int(
+                     WINING_STATES[4]),
+                 BitwiseAnd(state, Int(WINING_STATES[5])) == Int(
+                     WINING_STATES[5]),
+                 BitwiseAnd(state, Int(WINING_STATES[6])) == Int(
+                     WINING_STATES[6]),
                  BitwiseAnd(state, Int(WINING_STATES[7])) == Int(WINING_STATES[7])), Int(1), Int(0))
 
 
@@ -161,34 +170,42 @@ def play_action_logic():
     game_action = ShiftLeft(Int(1), position_index)
 
     player_x_move = Seq([
-        App.globalPut(AppVariables.PlayerXState, BitwiseOr(state_x, game_action)),
+        App.globalPut(AppVariables.PlayerXState,
+                      BitwiseOr(state_x, game_action)),
 
         If(has_player_won(App.globalGet(AppVariables.PlayerXState)),
            App.globalPut(AppVariables.GameStatus, Int(1))),
 
-        App.globalPut(AppVariables.PlayerTurnAddress, App.globalGet(AppVariables.PlayerOAddress)),
+        App.globalPut(AppVariables.PlayerTurnAddress,
+                      App.globalGet(AppVariables.PlayerOAddress)),
     ])
 
     player_o_move = Seq([
-        App.globalPut(AppVariables.PlayerOState, BitwiseOr(state_o, game_action)),
+        App.globalPut(AppVariables.PlayerOState,
+                      BitwiseOr(state_o, game_action)),
 
         If(has_player_won(App.globalGet(AppVariables.PlayerOState)),
            App.globalPut(AppVariables.GameStatus, Int(2))),
 
-        App.globalPut(AppVariables.PlayerTurnAddress, App.globalGet(AppVariables.PlayerXAddress)),
+        App.globalPut(AppVariables.PlayerTurnAddress,
+                      App.globalGet(AppVariables.PlayerXAddress)),
     ])
 
     return Seq([
         Assert(position_index >= Int(0)),
-        Assert(position_index <= Int(8)),
-        Assert(Global.latest_timestamp() <= App.globalGet(AppVariables.ActionTimeout)),
-        Assert(App.globalGet(AppVariables.GameStatus) == DefaultValues.GameStatus),
+        Assert(position_index <= Int(41)),
+        Assert(Global.latest_timestamp() <=
+               App.globalGet(AppVariables.ActionTimeout)),
+        Assert(App.globalGet(AppVariables.GameStatus)
+               == DefaultValues.GameStatus),
         Assert(Txn.sender() == App.globalGet(AppVariables.PlayerTurnAddress)),
         Assert(And(BitwiseAnd(state_x, game_action) == Int(0),
                    BitwiseAnd(state_o, game_action) == Int(0))),
         Cond(
-            [Txn.sender() == App.globalGet(AppVariables.PlayerXAddress), player_x_move],
-            [Txn.sender() == App.globalGet(AppVariables.PlayerOAddress), player_o_move],
+            [Txn.sender() == App.globalGet(
+                AppVariables.PlayerXAddress), player_x_move],
+            [Txn.sender() == App.globalGet(
+                AppVariables.PlayerOAddress), player_o_move],
         ),
         If(is_tie(), App.globalPut(AppVariables.GameStatus, Int(3))),
         Return(Int(1))
@@ -229,29 +246,37 @@ def money_refund_logic():
     game_is_tie = App.globalGet(AppVariables.GameStatus) == Int(3)
 
     x_withdraw = Seq([
-        Assert(Gtxn[1].receiver() == App.globalGet(AppVariables.PlayerXAddress)),
-        Assert(Gtxn[1].amount() == Int(2) * App.globalGet(AppVariables.BetAmount)),
+        Assert(Gtxn[1].receiver() == App.globalGet(
+            AppVariables.PlayerXAddress)),
+        Assert(Gtxn[1].amount() == Int(2) *
+               App.globalGet(AppVariables.BetAmount)),
         App.globalPut(AppVariables.GameStatus, Int(1))
     ])
 
     o_withdraw = Seq([
-        Assert(Gtxn[1].receiver() == App.globalGet(AppVariables.PlayerOAddress)),
-        Assert(Gtxn[1].amount() == Int(2) * App.globalGet(AppVariables.BetAmount)),
+        Assert(Gtxn[1].receiver() == App.globalGet(
+            AppVariables.PlayerOAddress)),
+        Assert(Gtxn[1].amount() == Int(2) *
+               App.globalGet(AppVariables.BetAmount)),
         App.globalPut(AppVariables.GameStatus, Int(2))
     ])
 
     tie_withdraw = Seq([
-        Assert(Gtxn[1].receiver() == App.globalGet(AppVariables.PlayerXAddress)),
+        Assert(Gtxn[1].receiver() == App.globalGet(
+            AppVariables.PlayerXAddress)),
         Assert(Gtxn[1].amount() == App.globalGet(AppVariables.BetAmount)),
         Assert(Gtxn[2].type_enum() == TxnType.Payment),
-        Assert(Gtxn[2].sender() == App.globalGet(AppVariables.FundsEscrowAddress)),
-        Assert(Gtxn[2].receiver() == App.globalGet(AppVariables.PlayerOAddress)),
+        Assert(Gtxn[2].sender() == App.globalGet(
+            AppVariables.FundsEscrowAddress)),
+        Assert(Gtxn[2].receiver() == App.globalGet(
+            AppVariables.PlayerOAddress)),
         Assert(Gtxn[2].amount() == App.globalGet(AppVariables.BetAmount))
     ])
 
     return Seq([
         Assert(Gtxn[1].type_enum() == TxnType.Payment),
-        Assert(Gtxn[1].sender() == App.globalGet(AppVariables.FundsEscrowAddress)),
+        Assert(Gtxn[1].sender() == App.globalGet(
+            AppVariables.FundsEscrowAddress)),
         Cond(
             [has_x_won, x_withdraw],
             [has_o_won, o_withdraw],
