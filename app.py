@@ -109,7 +109,7 @@ else:
     st.success(f"Current player: {st.session_state.player_turn}")
 
 mark_position_idx = st.number_input(f'Action position',
-                                    value=0,
+                                    value=41,
                                     step=1)
 
 
